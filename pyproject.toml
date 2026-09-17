@@ -1,0 +1,73 @@
+[project]
+name = "fp-extraction"
+version = "0.1.0"
+description = "Footprint extraction from satellite imagery with DINOv3 + LoRA"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "torchgeo>=0.10",
+    "lightning>=2.6",
+    "torchmetrics>=1.9",
+    "transformers>=5.17",
+    "peft>=0.21",
+    "accelerate>=1.15",
+    "safetensors>=0.8",
+    "rasterio>=1.5",
+    "geopandas>=1.1",
+    "shapely>=2.0",
+    "numpy>=2.0",
+    "pandas>=2.2",
+    "pyyaml>=6.0",
+    "matplotlib>=3.10",
+]
+
+[project.optional-dependencies]
+cpu = [
+    "torch>=2.14",
+    "torchvision>=0.29",
+]
+cu130 = [
+    "torch>=2.14",
+    "torchvision>=0.29",
+]
+
+[dependency-groups]
+notebook = [
+    "jupyterlab>=4.6",
+    "ipykernel>=7.0",
+    "ipywidgets>=8.1",
+]
+
+[tool.uv]
+conflicts = [
+    [
+        { extra = "cpu" },
+        { extra = "cu130" },
+    ],
+]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu130", extra = "cu130" },
+]
+torchvision = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu130", extra = "cu130" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fp"]

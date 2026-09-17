@@ -1,0 +1,91 @@
+# Fast end-to-end run used by notebooks/end_to_end.ipynb.
+# Same pipeline as configs/default.yaml, shrunk so it completes in minutes.
+
+project:
+  name: smoke
+  output_root: outputs
+  seed: 42
+
+data:
+  image_dir: FP_data/Images_v1
+  mask_dir: FP_data/Masks_v1
+  tiles: [image1]
+
+  target_res: 0.06
+  patch_size: 512
+  stride: 512
+
+  grid_path: outputs/grid_smoke.geojson
+
+  split_ratios:
+    train: 0.70
+    val: 0.15
+    test: 0.15
+
+  value_scale: 255.0
+  mean: [0.430, 0.411, 0.296]
+  std: [0.213, 0.156, 0.143]
+
+  batch_size: 2
+  num_workers: 0
+
+augmentation:
+  horizontal_flip: 0.5
+  vertical_flip: 0.5
+  rot90: 0.5
+  affine_probability: 0.5
+  rotation_degrees: 10.0
+  translate_fraction: 0.05
+  scale_range: [0.9, 1.1]
+
+model:
+  checkpoint: facebook/dinov3-vitl16-pretrain-sat493m
+  out_indices: [6, 12, 18, 24]
+  decoder: cnn
+  decoder_channels: 128
+
+  lora:
+    enabled: true
+    rank: 8
+    alpha: 16
+    dropout: 0.05
+    target_modules: [q_proj, k_proj, v_proj, o_proj]
+
+loss:
+  bce_weight: 0.5
+  dice_weight: 0.5
+  dice_smooth: 1.0
+
+training:
+  max_epochs: 2
+  lora_lr: 1.0e-4
+  decoder_lr: 3.0e-4
+  weight_decay: 0.01
+  precision: bf16-mixed
+  accumulate_grad_batches: 1
+  gradient_clip_val: 1.0
+
+  # Smoke run only: cap batches per epoch so the notebook finishes quickly.
+  limit_train_batches: 8
+  limit_val_batches: 4
+
+  scheduler:
+    name: cosine
+    min_lr: 1.0e-6
+    factor: 0.5
+    patience: 5
+
+  early_stopping:
+    enabled: false
+    monitor: val_iou
+    mode: max
+    patience: 15
+    min_delta: 0.001
+
+evaluation:
+  threshold: 0.5
+  num_test_plots: 4
+
+logging:
+  plot_every_n_epochs: 1
+  num_visualization_samples: 2
