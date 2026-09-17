@@ -16,24 +16,24 @@ FP_data/Masks_v1/image{1,2,3}.tif    # 1-band uint8 {0,1} building mask, same gr
 Requires [uv](https://docs.astral.sh/uv/).
 
 ```bash
-# CUDA machine (this project targets torch/cu130)
-uv sync --extra cu130 --group notebook
+# CUDA machine (this project targets torch/cu126)
+uv sync --extra cu126 --group notebook
 
 # CPU-only machine
 uv sync --extra cpu --group notebook
 ```
 
-`cpu` and `cu130` are conflicting extras — pick exactly one. Verify the install:
+`cpu` and `cu126` are conflicting extras — pick exactly one. Verify the install:
 
 ```bash
-uv run --extra cu130 python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
+uv run --extra cu126 python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
 ```
 
-> **Repeat `--extra cu130` (or `--extra cpu`) on every `uv run` / `uv sync` call.**
+> **Repeat `--extra cu126` (or `--extra cpu`) on every `uv run` / `uv sync` call.**
 > uv has no "sticky" extra: `torch` is also a plain transitive dependency of `torchgeo` and
 > `lightning`, so any bare `uv run ...` without the flag re-resolves the environment and
 > **silently reinstalls a CPU-only `torch` wheel from PyPI**, even after a correct
-> `--extra cu130` sync. This is a genuine uv footgun, confirmed in this project — always
+> `--extra cu126` sync. This is a genuine uv footgun, confirmed in this project — always
 > include the extra, as every command below does.
 
 ### Gated DINOv3 weights
@@ -42,8 +42,8 @@ uv run --extra cu130 python -c "import torch; print(torch.__version__, torch.cud
 the [model page](https://huggingface.co/facebook/dinov3-vitl16-pretrain-sat493m), then:
 
 ```bash
-uv run --extra cu130 hf auth login
-uv run --extra cu130 hf auth whoami   # confirm you're logged in before training
+uv run --extra cu126 hf auth login
+uv run --extra cu126 hf auth whoami   # confirm you're logged in before training
 ```
 
 ## Pipeline
@@ -54,13 +54,13 @@ Substitute `--extra cpu` throughout if you synced for CPU.
 
 ```bash
 # 1. Build the complete spatial grid per tile, then split deterministically
-uv run --extra cu130 python scripts/build_grid.py --config configs/default.yaml
+uv run --extra cu126 python scripts/build_grid.py --config configs/default.yaml
 
 # 2. Train (LoRA-adapted DINOv3 backbone + DPT/CNN decoder)
-uv run --extra cu130 python scripts/train.py --config configs/default.yaml
+uv run --extra cu126 python scripts/train.py --config configs/default.yaml
 
 # 3. Evaluate the selected checkpoint on the held-out test split
-uv run --extra cu130 python scripts/evaluate.py --config configs/default.yaml \
+uv run --extra cu126 python scripts/evaluate.py --config configs/default.yaml \
     --checkpoint outputs/dinov3_lora_dpt/checkpoints/best.ckpt
 ```
 
@@ -68,7 +68,7 @@ See `notebooks/end_to_end.ipynb` for all three stages run together with visualis
 the fast `configs/smoke.yaml`. Launch it the same way:
 
 ```bash
-uv run --extra cu130 jupyter lab notebooks/end_to_end.ipynb
+uv run --extra cu126 jupyter lab notebooks/end_to_end.ipynb
 ```
 
 ## Design notes
@@ -94,7 +94,7 @@ uv run --extra cu130 jupyter lab notebooks/end_to_end.ipynb
 - **LoRA target modules**: the Hugging Face DINOv3 implementation names attention
   projections `q_proj`/`k_proj`/`v_proj`/`o_proj` (not the fused `qkv`/`proj` naming used by
   Meta's/timm's implementation) — `configs/*.yaml` targets the HF names.
-- **`uv run` and the `cu130` extra**: pass `--extra cu130` on every invocation (see Setup) —
+- **`uv run` and the `cu126` extra**: pass `--extra cu126` on every invocation (see Setup) —
   uv re-resolves the environment on each `uv run`, and without the flag `torch` falls back to
   a transitive CPU wheel pulled in by `torchgeo`/`lightning`, even after a correct sync.
 - **Reproducibility bundle** per run, under `outputs/<project.name>/`:
