@@ -8,7 +8,7 @@ project:
 data:
   image_dir: FP_data/Images_v1
   mask_dir: FP_data/Masks_v1
-  tiles: [image1, image2, image3]
+  tiles: [image1, image2]
 
   # Native tile resolution (metres/pixel). Set to null to use each file's own resolution.
   target_res: 0.06
@@ -23,9 +23,9 @@ data:
   # Grid cells are split within each tile, so every tile contributes to all three
   # splits. This is intentional; see README for the spatial-correlation caveat.
   split_ratios:
-    train: 0.70
-    val: 0.15
-    test: 0.15
+    train: 0.60
+    val: 0.20
+    test: 0.20
 
   # Imagery is uint8 stored as float32 by TorchGeo; scale to [0, 1] before normalising.
   value_scale: 255.0
@@ -70,7 +70,7 @@ loss:
   dice_smooth: 1.0
 
 training:
-  max_epochs: 100
+  max_epochs: 500
   lora_lr: 1.0e-4
   decoder_lr: 3.0e-4
   weight_decay: 0.01
@@ -89,7 +89,7 @@ training:
     enabled: true
     monitor: val_iou
     mode: max
-    patience: 15
+    patience: 30
     min_delta: 0.001
 
 evaluation:

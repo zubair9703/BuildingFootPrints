@@ -9,7 +9,7 @@ project:
 data:
   image_dir: FP_data/Images_v1
   mask_dir: FP_data/Masks_v1
-  tiles: [image1]
+  tiles: [image1,image2]
 
   target_res: 0.06
   patch_size: 512
@@ -18,9 +18,9 @@ data:
   grid_path: outputs/grid_smoke.geojson
 
   split_ratios:
-    train: 0.70
-    val: 0.15
-    test: 0.15
+    train: 0.60
+    val: 0.20
+    test: 0.20
 
   value_scale: 255.0
   mean: [0.430, 0.411, 0.296]
@@ -57,7 +57,7 @@ loss:
   dice_smooth: 1.0
 
 training:
-  max_epochs: 2
+  max_epochs: 500
   lora_lr: 1.0e-4
   decoder_lr: 3.0e-4
   weight_decay: 0.01
@@ -79,7 +79,7 @@ training:
     enabled: false
     monitor: val_iou
     mode: max
-    patience: 15
+    patience: 50
     min_delta: 0.001
 
 evaluation:
